@@ -1,0 +1,114 @@
+```{r}
+
+# Clear workspace
+rm(list=ls()) 
+
+# Load packages
+library(randomForest)
+library(raster)
+library(rgdal)
+
+# Get list of raster files
+gedi_files <- list.files(path = "tiffs/gedi", full.names = TRUE, recursive = TRUE, pattern = "\\.tif$")
+sentinel_files <- list.files(path = "tiffs/sentinel", full.names = TRUE, recursive = TRUE, pattern = "\\.tif$")
+planet_files <- list.files(path = "tiffs/planet", full.names = TRUE, recursive = TRUE, pattern = "\\.tif$")
+agb_files <- list.files(path = "tiffs/agb_tls", full.names = TRUE, recursive = TRUE, pattern = "\\.tif$")
+
+
+```
+
+
+```{r}
+
+#### LOAD RASTER DATA ###
+
+# Ad file lists to list
+f <- c(gedi_files, planet_files, sentinel_files, agb_files)
+
+# Load reference raster for clipping extent
+reference <- brick("tiffs/planet/composite_clipped.tif")
+
+# Create empty raster stack
+s <- stack()
+
+# For each raster in list clip raster to reference and add to raster stack 
+for (i in f) {
+  raster_image <- brick(i)
+  raster_image_rsmpl <- resample(raster_image, reference, method="bilinear")
+  s <- addLayer(s, raster_image_rsmpl)
+
+}
+
+# Plot all rasters in stack
+plot(s, maxnl=length(f))
+
+```
+
+```{r}
+
+#### IMPLIMENT RANDOM FOREST MODEL ####
+
+# Read in TLS AGB raster
+agb_raster <- stack("/home/dev103/ownCloud/PLANET_CHALLENGE/model/tiffs/litchfield/agb_tls/AGB_TIN_3M.tif")
+
+# Convert to matrix
+agb <- as(raster(agb_files[1]), "matrix")
+# Change NA to 0
+# agb[is.na(agb)] <- 0
+
+# Convert raster stack to dataframe
+d <- as.data.frame(s)
+# Change NA to 0
+d[is.na(d)] <- 0
+
+# Create random forest model
+m <- randomForest(d$AGB_TIN_3M~., d, mtry=10, ntree=400)
+
+# Run model
+p <- predict(s, m)
+
+```
+
+
+
+```{r}
+
+#### COMPUTE METRICS ####
+
+# Import the caret library for computing significance metrics
+library(caret)
+
+# Convert prediction from raster to matrix
+p_matrix <- as(p, "matrix")
+
+# Compute RMSE, R squared and mean absolute error
+res <- caret::postResample(agb, p_matrix)
+
+#print metrics
+res
+
+```
+
+
+```{r}
+
+# Plot scatterplot of TLS estimaetd AGB vs Predicted AGB
+
+plot(agb, p_matrix, ylim=c(0,800), xlim=c(0,800), xlab = " TLS estimated AGB", ylab = "Predicted AGB", pch = 19, cex=0.75)
+legend("topleft",legend=paste("R2: ", res[2]), cex = 0.75)
+legend("topright",legend=paste("RMSE: ", res[1]), cex = 0.75)
+
+
+```
+
+
+```{r}
+
+#Plot prediction and TLS AGB estimate rasters
+
+plot(stack(s$AGB_TIN_3M), zlim=c(0,900), main = "TLS Estimation",  xlab = "Lat", ylab = "Lon", legend.args = list(text= expression(paste("AGB m"^"3"))))
+
+plot(stack(p), zlim=c(0,900), nc= 222, main = "Predicted", xlab = "Lat", ylab = "Lon", legend.args = list(text= expression(paste("AGB m"^"3"))))
+
+
+```
