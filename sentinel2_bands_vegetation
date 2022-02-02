@@ -1,0 +1,121 @@
+
+//Study area
+
+var geometry = ee.FeatureCollection('users/anapatriciaruizbeltran/litchfield_timeseries');
+
+// Create image collection of S-2 imagery for the perdiod 2016-2018
+
+var image= ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL')
+
+var projection = image.select('B3').projection().getInfo();
+
+/*var image3 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B3')
+var image3 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B3')
+var image4 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B4')
+var image5 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B5')
+var image6 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B6')
+var image7 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B7')
+var image8 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B8')
+var image8A = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B8A')
+var image9= ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B9')
+var image11 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B11')
+var image12 = ee.Image('COPERNICUS/S2_SR/20210906T013709_20210906T013731_T52LFL').select('B12')*/
+
+/*
+// Compute the EVI using an expression.
+var evi = image.expression(
+    '2.5 * ((NIR - RED) / (NIR + 6 * RED - 7.5 * BLUE + 1))', {
+      'NIR': image.select('B8'),
+      'RED': image.select('B4'),
+      'BLUE': image.select('B2')
+})
+
+
+Export.image.toDrive({
+  image: evi,
+  description: 'EVI',
+  crs: projection.crs,
+  crsTransform: projection.transform,
+  region: geometry,
+});
+
+// Compute NDVI1
+var NDVI1 = function(image) {
+return image.addBands(image.normalizedDifference(['B8', 'B4']));
+};
+
+Export.image.toDrive({
+  image: NDVI1,
+  description: 'NDVI1',
+  crs: projection.crs,
+  crsTransform: projection.transform,
+  region: geometry,
+});
+
+//Compute NDVI2
+
+var NDVI2 = function(image){
+  return image.addBands(image.normalizedDifference(['B8A', 'B4']));
+};
+
+Export.image.toDrive({
+  image: NDVI2,
+  description: 'NDVI2',
+  crs: projection.crs,
+  crsTransform: projection.transform,
+  region: geometry,
+});
+
+//Compute NDI45
+
+
+var NDI45 = image.expression(
+  '(EDGE-RED)/(EDGE+RED)', {
+    'EDGE': image.select('B5'),
+    'RED': image.select ('B4')
+  })
+  
+  Export.image.toDrive({
+  image: NDI45,
+  description: 'NDI45',
+  crs: projection.crs,
+  crsTransform: projection.transform,
+  region: geometry,
+});
+  
+//Compute TCARI
+  
+var TCARI = image.expression(
+  '3*((EDGE-RED)-0.2*(EDGE-GREEN)*(EDGE/RED))', {
+  'EDGE': image.select('B5'),
+  'GREEN': image.select('B3'),
+  'RED': image.select('B4')
+  }
+  )
+
+Export.image.toDrive({
+  image: TCARI,
+  description: 'TCARI',
+  crs: projection.crs,
+  crsTransform: projection.transform,
+  region: geometry,
+});
+// Compute OSACI
+
+
+
+var OSAVI = image.expression(
+    '(1.16)* (B8 - B4)/(B8 + B4 +0.16)', {
+        'B8': image.select('B8'), 
+        'B4': image.select('B4')
+    }
+)
+
+Export.image.toDrive({
+  image: OSAVI,
+  description: 'OSAVI',
+  crs: projection.crs,
+  crsTransform: projection.transform,
+  region: geometry,
+});*/
+// Compute MCARDI
