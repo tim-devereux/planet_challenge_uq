@@ -1,0 +1,59 @@
+//This variable is the extension of your study site
+var geometry = ee.FeatureCollection('users/anapatriciaruizbeltran/samford_timeseries');
+
+// Create image collection of S-2 imagery for the perdiod 2016-2018
+var S2 = ee.ImageCollection('COPERNICUS/S2_SR')
+
+//filter start and end date
+.filterDate('2018-09-01', '2022-01-01')
+
+//filter according to drawn boundary
+.filterBounds(geometry);
+
+// Function to mask cloud from built-in quality band
+// information on cloud
+
+var maskcloud1 = function(image) {
+  var qa = image.select('QA60');
+
+  // Bits 10 and 11 are clouds and cirrus, respectively.
+  var cloudBitMask = 1 << 10;
+  var cirrusBitMask = 1 << 11;
+
+  // Both flags should be set to zero, indicating clear conditions.
+  var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
+      .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+
+  return image.updateMask(mask).divide(10000);
+}
+
+
+
+// Function to calculate and add an NDVI band
+var addNDVI = function(image) {
+return image.addBands(image.normalizedDifference(['B8', 'B4']));
+};
+
+// Add NDVI band to image collection
+var S2 = S2.map(addNDVI);
+// Extract NDVI band and create NDVI median composite image
+var NDVI = S2.select(['nd']);
+var NDVImed = NDVI.median(); //I just changed the name of this variable ;)
+
+// Create palettes for display of NDVI
+var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+'#a6d96a'];
+
+// Create a time series chart.
+var plotNDVI = ui.Chart.image.seriesByRegion(S2, geometry,ee.Reducer.mean(),
+'nd',500,'system:time_start', 'system:index')
+              .setChartType('LineChart').setOptions({
+                title: 'NDVI short-term time series',
+                hAxis: {title: 'Date'},
+                vAxis: {title: 'NDVI'}
+});
+
+// Display.
+print(plotNDVI);
+
+
