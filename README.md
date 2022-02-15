@@ -1,7 +1,7 @@
 
-# Estimating Sequestred Carbon in Forest
+# Estimating Carbon Sequestration in Forests through the fusion of remote sensors.
 
-Developed by Tim Deveroux, Jason Barnerston and Ana Patricia Ruiz Beltran
+Developed by Tim Devereux, Jason Barnerston and Ana Patricia Ruiz Beltran.
 
 Code for predicting above ground biomass using data aquired from Planet Dove, Sentinel 2B, GEDI and Terrestrial Laser Scanning (TLS).
 
